@@ -1,0 +1,29 @@
+name: Build Windows EXE
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'windows/**'
+      - '.github/workflows/build-windows.yml'
+jobs:
+  exe:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Copiar o jogo (versao PC, sem esticar)
+        shell: bash
+        run: |
+          mkdir -p windows/game
+          cp app/src/main/assets/www/index.html windows/game/index.html
+          sed -i 's/window.QD_FILL=true/window.QD_FILL=false/' windows/game/index.html
+      - name: Instalar e empacotar
+        working-directory: windows
+        run: |
+          npm install
+          npm run dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: quarto-de-despejo-windows-exe
+          path: windows/dist/*.exe
